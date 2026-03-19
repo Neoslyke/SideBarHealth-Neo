@@ -12,11 +12,11 @@ namespace SidebarHealth
     public class SideBar : TerrariaPlugin
     {
         public override string Name => "Sidebar Health Display";
-        public override Version Version => new Version(0, 7, 3);
+        public override Version Version => new Version(0, 7, 4);
         public override string Author => "Neoslyke (fork of Geolindrag)";
         public override string Description => "Shows everyone’s health on the sidebar";
 
-        public static string path = Path.Combine(TShock.SavePath, "SidebarHealth.json");
+        public static string path = Path.Combine(TShock.SavePath, "SideBarHealth.json");
         public static Config Config = new();
 
         private static PlrData[] plrData = new PlrData[255];

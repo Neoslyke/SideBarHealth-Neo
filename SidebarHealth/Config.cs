@@ -24,7 +24,7 @@ namespace SidebarHealth
         {
             if (!File.Exists(SideBar.path))
                 return new Config();
-            return JsonConvert.DeserializeObject<Config>(File.ReadAllText(SideBar.path));
+            return JsonConvert.DeserializeObject<Config>(File.ReadAllText(SideBar.path)) ?? new Config();
         }
     }
 }
