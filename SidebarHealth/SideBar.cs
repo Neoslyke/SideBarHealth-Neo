@@ -87,46 +87,60 @@ namespace SidebarHealth
             plrData[id].HP = hp;
             plrData[id].MaxHP = maxHp;
 
-            string msg = "";
-
             for (int i = 0; i < plrData.Length; i++)
             {
-                var tsplr = TShock.Players[i];
-                var data = plrData[i];
+                var viewer = TShock.Players[i];
+                if (viewer == null || plrData[i].DoHide == 1 || plrData[i].HP == -1)
+                    continue;
 
-                if (tsplr == null || tsplr.TPlayer == null || data.HP <= 0)
+                int viewerTeam = viewer.TPlayer.team;
+
+                // ❌ no team → show nothing
+                if (viewerTeam < 1 || viewerTeam > 5)
                 {
-                    if (tsplr != null)
-                        msg += Config.deadFormat.Replace("{0}", tsplr.Name);
+                    viewer.SendData(PacketTypes.Status, Config.Outset, 0, Config.TextFlag);
                     continue;
                 }
 
-                if (data.MaxHP <= 0)
-                    continue;
+                string msg = "";
 
-                int hpPercent = (data.HP * 100) / data.MaxHP;
+                for (int j = 0; j < plrData.Length; j++)
+                {
+                    var target = TShock.Players[j];
+                    var data = plrData[j];
 
-                string color = GetGradientColor(hpPercent);
+                    if (target == null || target.TPlayer == null || data.HP == -1)
+                        continue;
 
-                string bar = BuildBar(data, color);
+                    // ✅ only same team
+                    if (target.TPlayer.team != viewerTeam)
+                        continue;
 
-                string line = Config.format
-                    .Replace("{0}", tsplr.Name)
-                    .Replace("{1}", bar)
-                    .Replace("{2}", data.HP.ToString());
+                    if (data.HP <= 0)
+                    {
+                        msg += Config.deadFormat.Replace("{0}", target.Name);
+                        continue;
+                    }
 
-                msg += line;
-            }
+                    if (data.MaxHP <= 0)
+                        continue;
 
-            msg += Config.Outset;
+                    int hpPercent = (data.HP * 100) / data.MaxHP;
 
-            for (int i = 0; i < plrData.Length; i++)
-            {
-                var p = TShock.Players[i];
-                if (p == null || plrData[i].DoHide == 1 || plrData[i].HP == -1)
-                    continue;
+                    string color = GetGradientColor(hpPercent);
+                    string bar = BuildBar(data, color);
 
-                p.SendData(PacketTypes.Status, msg, 0, Config.TextFlag);
+                    string line = Config.format
+                        .Replace("{0}", target.Name)
+                        .Replace("{1}", bar)
+                        .Replace("{2}", data.HP.ToString());
+
+                    msg += line;
+                }
+
+                msg += Config.Outset;
+
+                viewer.SendData(PacketTypes.Status, msg, 0, Config.TextFlag);
             }
         }
 
