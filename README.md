@@ -1,12 +1,25 @@
-# Tshock-SideBarHealth
+# SideBarHealth
 
-**This plugin has some bugs that i did not care to fix,bad code in general, and a NULL exception on player join, as was only used on local worlds with 2-8 players, so be careful if you plan to use it on an actual public server**
-
-A Tshock Plugin that shows everyone's health values on the sidebar in text format
+A TShock plugin that shows teammate's health values on the sidebar in text format.
 
 You can customize the color of the health bar via the Config file, Add Keyframes to change colors depending on the HP%, Customize the format to be shown, and add a special format if the player is dead
 
-## Config file params
+## How to Install
+1. Download the `.dll` file.
+2. Put the `.dll` file inside of `/ServerPlugins/`
+3. Stop and rerun the server.
+
+## Versions
+SideBarHealth v0.7.4 (Latest)
+
+## Instructions
+### Commands
+`/toggleinfo`
+
+### Permissions
+`tshock.canchat`
+
+### Config file params
 The config file will appear once you have installed the plugin and ran Tshock once
 You can refresh it on the go once you modified by running /refresh in the Tshock console
 |Parameter|Valid values|Description|
@@ -20,8 +33,3 @@ You can refresh it on the go once you modified by running /refresh in the Tshock
 |Outset|string|A text added at the end of the message to adjust the text horizontal position|
 |ArrayLength|Byte|Not implemented yet|
 |TextFlag|Byte|See Terraria multiplayer packet structure for reference ; 1= hide default message 2=Use shadows/Text outline 3=1 and 2 |
-
-
-|Command|Permission group|Description|
-|---|---|---|
-|/toggleinfo|tshock.canchat|Shows/Hides the sidebar on your own client|
