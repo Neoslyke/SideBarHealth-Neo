@@ -5,6 +5,7 @@ using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.Hooks;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace SidebarHealth
 {
@@ -12,7 +13,7 @@ namespace SidebarHealth
     public class SideBar : TerrariaPlugin
     {
         public override string Name => "Sidebar Health Display";
-        public override Version Version => new Version(0, 7, 4);
+        public override Version Version => new Version(0, 7, 5);
         public override string Author => "Neoslyke (fork of Geolindrag)";
         public override string Description => "Shows everyone’s health on the sidebar";
 
@@ -21,12 +22,20 @@ namespace SidebarHealth
 
         private static PlrData[] plrData = new PlrData[255];
 
+        // ✅ tracking changes + delay
+        private static int[] lastHP = new int[255];
+        private static Stopwatch timer = Stopwatch.StartNew();
+        private const int UpdateDelayMs = 250;
+
         public SideBar(Main game) : base(game) { }
 
         public override void Initialize()
         {
             for (int i = 0; i < plrData.Length; i++)
+            {
                 plrData[i] = new PlrData();
+                lastHP[i] = -1;
+            }
 
             Commands.ChatCommands.Add(new Command(Permissions.canchat, ToggleInfo, "toggleinfo"));
 
@@ -87,6 +96,18 @@ namespace SidebarHealth
             plrData[id].HP = hp;
             plrData[id].MaxHP = maxHp;
 
+            // ✅ only update if HP changed
+            if (lastHP[id] == hp)
+                return;
+
+            lastHP[id] = hp;
+
+            // ✅ delay check
+            if (timer.ElapsedMilliseconds < UpdateDelayMs)
+                return;
+
+            timer.Restart();
+
             for (int i = 0; i < plrData.Length; i++)
             {
                 var viewer = TShock.Players[i];
@@ -95,7 +116,7 @@ namespace SidebarHealth
 
                 int viewerTeam = viewer.TPlayer.team;
 
-                // ❌ no team → show nothing
+                // ❌ no team → empty
                 if (viewerTeam < 1 || viewerTeam > 5)
                 {
                     viewer.SendData(PacketTypes.Status, Config.Outset, 0, Config.TextFlag);
@@ -112,7 +133,6 @@ namespace SidebarHealth
                     if (target == null || target.TPlayer == null || data.HP == -1)
                         continue;
 
-                    // ✅ only same team
                     if (target.TPlayer.team != viewerTeam)
                         continue;
 
@@ -174,7 +194,6 @@ namespace SidebarHealth
                 if (hp <= Config.gradientKeyFrames[j] && hp > Config.gradientKeyFrames[j + 1])
                 {
                     int rel = max - (hp - Config.gradientKeyFrames[j + 1]);
-
                     return LerpColor(Config.gradient[j], Config.gradient[j + 1], rel, max);
                 }
             }
