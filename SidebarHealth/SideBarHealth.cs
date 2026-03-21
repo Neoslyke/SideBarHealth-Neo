@@ -5,7 +5,6 @@ using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.Hooks;
 using Microsoft.Xna.Framework;
-using System.Diagnostics;
 
 namespace SideBarHealth
 {
@@ -13,19 +12,14 @@ namespace SideBarHealth
     public class SideBar : TerrariaPlugin
     {
         public override string Name => "SideBarHealth";
-        public override Version Version => new Version(2, 1, 0);
+        public override Version Version => new Version(2, 2, 0);
         public override string Author => "Neoslyke, Geolindrag";
-        public override string Description => "Shows team’s health on the sidebar.";
+        public override string Description => "Shows nearby team's health on the sidebar.";
 
         public static string path = Path.Combine(TShock.SavePath, "SideBarHealth.json");
         public static Config Config = new();
 
         private static PlrData[] plrData = new PlrData[255];
-
-        // ✅ tracking changes + delay
-        private static int[] lastHP = new int[255];
-        private static Stopwatch timer = Stopwatch.StartNew();
-        private const int UpdateDelayMs = 250;
 
         public SideBar(Main game) : base(game) { }
 
@@ -34,12 +28,12 @@ namespace SideBarHealth
             for (int i = 0; i < plrData.Length; i++)
             {
                 plrData[i] = new PlrData();
-                lastHP[i] = -1;
             }
 
             Commands.ChatCommands.Add(new Command(Permissions.canchat, ToggleInfo, "toggleinfo"));
 
             ServerApi.Hooks.NetGetData.Register(this, OnHP);
+            ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
             GeneralHooks.ReloadEvent += OnReload;
 
             Config = File.Exists(path) ? Config.Read() : new Config();
@@ -51,6 +45,7 @@ namespace SideBarHealth
             if (disposing)
             {
                 ServerApi.Hooks.NetGetData.Deregister(this, OnHP);
+                ServerApi.Hooks.GameUpdate.Deregister(this, OnGameUpdate);
                 GeneralHooks.ReloadEvent -= OnReload;
             }
             base.Dispose(disposing);
@@ -76,6 +71,19 @@ namespace SideBarHealth
             }
         }
 
+        private int updateCounter = 0;
+
+        private void OnGameUpdate(EventArgs args)
+        {
+            // Update every 15 ticks (~4 times per second for smooth updates)
+            updateCounter++;
+            if (updateCounter < 15)
+                return;
+            updateCounter = 0;
+
+            UpdateAllSidebars();
+        }
+
         private void OnHP(GetDataEventArgs args)
         {
             if (args.MsgID != PacketTypes.PlayerHp || args.Handled)
@@ -95,28 +103,19 @@ namespace SideBarHealth
 
             plrData[id].HP = hp;
             plrData[id].MaxHP = maxHp;
+        }
 
-            // ✅ only update if HP changed
-            if (lastHP[id] == hp)
-                return;
-
-            lastHP[id] = hp;
-
-            // ✅ delay check
-            if (timer.ElapsedMilliseconds < UpdateDelayMs)
-                return;
-
-            timer.Restart();
-
+        private void UpdateAllSidebars()
+        {
             for (int i = 0; i < plrData.Length; i++)
             {
                 var viewer = TShock.Players[i];
-                if (viewer == null || plrData[i].DoHide == 1 || plrData[i].HP == -1)
+                if (viewer == null || !viewer.Active || plrData[i].DoHide == 1)
                     continue;
 
                 int viewerTeam = viewer.TPlayer.team;
 
-                // ❌ no team → empty
+                // No team → empty sidebar
                 if (viewerTeam < 1 || viewerTeam > 5)
                 {
                     viewer.SendData(PacketTypes.Status, Config.Outset, 0, Config.TextFlag);
@@ -124,17 +123,29 @@ namespace SideBarHealth
                 }
 
                 string msg = "";
+                int playerCount = 0;
 
                 for (int j = 0; j < plrData.Length; j++)
                 {
+                    if (i == j) // Skip self
+                        continue;
+
                     var target = TShock.Players[j];
                     var data = plrData[j];
 
-                    if (target == null || target.TPlayer == null || data.HP == -1)
+                    if (target == null || !target.Active || target.TPlayer == null)
                         continue;
 
+                    // Must be same team
                     if (target.TPlayer.team != viewerTeam)
                         continue;
+
+                    // Check distance
+                    float distance = GetDistance(viewer, target);
+                    if (distance > Config.MaxDistance)
+                        continue;
+
+                    playerCount++;
 
                     if (data.HP <= 0)
                     {
@@ -153,15 +164,29 @@ namespace SideBarHealth
                     string line = Config.format
                         .Replace("{0}", target.Name)
                         .Replace("{1}", bar)
-                        .Replace("{2}", data.HP.ToString());
+                        .Replace("{2}", data.HP.ToString())
+                        .Replace("{3}", data.MaxHP.ToString())
+                        .Replace("{4}", ((int)distance).ToString());
 
                     msg += line;
+                }
+
+                if (playerCount == 0)
+                {
+                    msg = Config.NoNearbyPlayers;
                 }
 
                 msg += Config.Outset;
 
                 viewer.SendData(PacketTypes.Status, msg, 0, Config.TextFlag);
             }
+        }
+
+        private float GetDistance(TSPlayer player1, TSPlayer player2)
+        {
+            float dx = player1.TPlayer.position.X - player2.TPlayer.position.X;
+            float dy = player1.TPlayer.position.Y - player2.TPlayer.position.Y;
+            return (float)Math.Sqrt(dx * dx + dy * dy) / 16f; // Convert to tiles
         }
 
         private string BuildBar(PlrData data, string color)
@@ -229,6 +254,7 @@ namespace SideBarHealth
         private void OnReload(ReloadEventArgs e)
         {
             Config = File.Exists(path) ? Config.Read() : new Config();
+            e.Player?.SendSuccessMessage("[SideBarHealth] Config reloaded.");
         }
     }
 }

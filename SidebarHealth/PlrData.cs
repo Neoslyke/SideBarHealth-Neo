@@ -2,8 +2,8 @@
 {
     public class PlrData
     {
-        public int HP = -1;
-        public int MaxHP = -1;
+        public short HP = -1;
+        public short MaxHP = -1;
         public byte DoHide = 0;
     }
 }
