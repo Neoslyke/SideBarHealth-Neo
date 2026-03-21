@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Drawing;
 
-namespace SidebarHealth
+namespace SideBarHealth
 {
     public class Config
     {

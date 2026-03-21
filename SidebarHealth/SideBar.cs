@@ -7,15 +7,15 @@ using TShockAPI.Hooks;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
-namespace SidebarHealth
+namespace SideBarHealth
 {
     [ApiVersion(2, 1)]
     public class SideBar : TerrariaPlugin
     {
-        public override string Name => "Sidebar Health Display";
-        public override Version Version => new Version(0, 7, 5);
-        public override string Author => "Neoslyke (fork of Geolindrag)";
-        public override string Description => "Shows everyone’s health on the sidebar";
+        public override string Name => "SideBarHealth";
+        public override Version Version => new Version(2, 1, 0);
+        public override string Author => "Neoslyke, Geolindrag)";
+        public override string Description => "Shows team’s health on the sidebar.";
 
         public static string path = Path.Combine(TShock.SavePath, "SideBarHealth.json");
         public static Config Config = new();

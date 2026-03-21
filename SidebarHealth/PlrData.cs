@@ -1,4 +1,4 @@
-﻿namespace SidebarHealth
+﻿namespace SideBarHealth
 {
     public class PlrData
     {
