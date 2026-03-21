@@ -14,7 +14,7 @@ namespace SideBarHealth
     {
         public override string Name => "SideBarHealth";
         public override Version Version => new Version(2, 1, 0);
-        public override string Author => "Neoslyke, Geolindrag)";
+        public override string Author => "Neoslyke, Geolindrag";
         public override string Description => "Shows team’s health on the sidebar.";
 
         public static string path = Path.Combine(TShock.SavePath, "SideBarHealth.json");
