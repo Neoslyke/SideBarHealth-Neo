@@ -5,12 +5,13 @@ namespace SideBarHealth
 {
     public class Config
     {
-        public float MaxDistance = 100f; // Distance in tiles
-        public string NoNearbyPlayers = "No nearby teammates";
+        public float MaxDistance = 100f;
         public string Outset = "";
         public int TextFlag = 0;
         public string format = "{0}: {1} {2}/{3}HP\n";
+        public string selfFormat = "[c/FFFF00:★ You]: {1} [c/FFFFFF:{2}/{3}]\n";
         public string deadFormat = "[c/FF0000:{0}: DEAD]\n";
+        public string selfDeadFormat = "[c/FF0000:★ You: DEAD]\n";
         public string barChar = "|";
         public string colorDamage = "444444";
         public string[] gradient = { "00FF00", "FFFF00", "FF0000" };
