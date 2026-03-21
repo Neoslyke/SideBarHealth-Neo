@@ -12,7 +12,7 @@ namespace SideBarHealth
     public class SideBar : TerrariaPlugin
     {
         public override string Name => "SideBarHealth";
-        public override Version Version => new Version(2, 2, 4);
+        public override Version Version => new Version(2, 2, 5);
         public override string Author => "Neoslyke, Geolindrag";
         public override string Description => "Shows nearby team's health on the sidebar.";
 
@@ -62,7 +62,7 @@ namespace SideBarHealth
             if (data.DoHide == 1)
             {
                 player.SendMessage("Sidebar hidden", Color.Magenta);
-                player.SendData(PacketTypes.Status, Config.Outset, 0, 0);
+                player.SendData(PacketTypes.Status, Config.Outset, 0, 0, 0, 0, 0);
             }
             else
             {
@@ -191,7 +191,9 @@ namespace SideBarHealth
                 }
 
                 msg += Config.Outset;
-                viewer.SendData(PacketTypes.Status, msg, 0, Config.TextFlag);
+
+                // EXACT SAME SendData FORMAT AS ORIGINAL CODE
+                viewer.SendData(PacketTypes.Status, msg, 0, Config.TextFlag, 0, 0, 0);
             }
         }
 

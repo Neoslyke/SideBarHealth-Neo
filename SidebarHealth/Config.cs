@@ -6,16 +6,16 @@ namespace SideBarHealth
     public class Config
     {
         public float MaxDistance = 100f;
-        public string Outset = "";
-        public int TextFlag = 0;
-        public string format = "{0}: {1} {2}/{3}HP\n";
-        public string selfFormat = "[c/FFFF00:★ You]: {1} [c/FFFFFF:{2}/{3}]\n";
-        public string deadFormat = "[c/FF0000:{0}: DEAD]\n";
-        public string selfDeadFormat = "[c/FF0000:★ You: DEAD]\n";
-        public string barChar = "|";
-        public string colorDamage = "444444";
-        public string[] gradient = { "00FF00", "FFFF00", "FF0000" };
-        public int[] gradientKeyFrames = { 100, 50, 0 };
+        public string[] gradient = { "00FFFF", "00FF00", "00FF00", "FFFF00", "FF0000" };
+        public int[] gradientKeyFrames = { 120, 100, 50, 50, 0 };
+        public string colorDamage = "000000";
+        public string format = "{0}\n{1}<{2}\n";
+        public string selfFormat = "[c/FFFF00:★ You]\n{1}<{2}\n";
+        public string barChar = "l";
+        public string deadFormat = "[c/ff0000:{0}]\n";
+        public string selfDeadFormat = "[c/ff0000:★ You: DEAD]\n";
+        public string Outset = "\n                                                            ";
+        public int TextFlag = 2;
 
         public void Write()
         {
@@ -24,6 +24,8 @@ namespace SideBarHealth
 
         public static Config Read()
         {
+            if (!File.Exists(SideBar.path))
+                return new Config();
             return JsonConvert.DeserializeObject<Config>(File.ReadAllText(SideBar.path)) ?? new Config();
         }
     }
