@@ -12,7 +12,7 @@ namespace SideBarHealth
     public class SideBar : TerrariaPlugin
     {
         public override string Name => "SideBarHealth";
-        public override Version Version => new Version(2, 2, 5);
+        public override Version Version => new Version(2, 1, 0);
         public override string Author => "Neoslyke, Geolindrag";
         public override string Description => "Shows nearby team's health on the sidebar.";
 
