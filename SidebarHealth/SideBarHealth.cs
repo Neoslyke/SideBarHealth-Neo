@@ -17,7 +17,7 @@ namespace SideBarHealth
         public override string Description => "Shows nearby team's health on the sidebar.";
 
         public static string path = Path.Combine(TShock.SavePath, "SideBarHealth.json");
-        public static Config Config = new();
+        public static Configuration Config = new();
 
         private static PlrData[] plrData = new PlrData[255];
         private int updateCounter = 0;
@@ -36,7 +36,7 @@ namespace SideBarHealth
             ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
             GeneralHooks.ReloadEvent += OnReload;
 
-            Config = File.Exists(path) ? Config.Read() : new Config();
+            Config = File.Exists(path) ? Configuration.Read() : new Configuration();
             Config.Write();
         }
 
@@ -118,7 +118,6 @@ namespace SideBarHealth
                 int viewerTeam = viewer.TPlayer.team;
                 string msg = "";
 
-                // ===== SELF HEALTH FIRST (always on top) =====
                 int selfHP = viewer.TPlayer.statLife;
                 int selfMaxHP = viewer.TPlayer.statLifeMax2;
 
@@ -142,41 +141,35 @@ namespace SideBarHealth
                     }
                 }
 
-                // ===== TEAMMATES (only if in a team) =====
                 if (viewerTeam >= 1 && viewerTeam <= 5)
                 {
                     for (int j = 0; j < 255; j++)
                     {
-                        if (i == j) continue; // Skip self (already added above)
+                        if (i == j) continue;
 
                         var target = TShock.Players[j];
                         if (target == null || !target.Active || target.TPlayer == null)
                             continue;
 
-                        // Must be same team
                         if (target.TPlayer.team != viewerTeam)
                             continue;
 
-                        // Check distance
                         float distance = GetDistance(viewer, target);
                         if (distance > Config.MaxDistance)
                             continue;
 
-                        // Get HP data
                         int targetHP = target.TPlayer.statLife;
                         int targetMaxHP = target.TPlayer.statLifeMax2;
 
                         if (targetMaxHP <= 0)
                             continue;
 
-                        // Dead teammate
                         if (targetHP <= 0)
                         {
                             msg += Config.deadFormat.Replace("{0}", target.Name);
                             continue;
                         }
 
-                        // Build health bar
                         int hpPercent = (targetHP * 100) / targetMaxHP;
                         string color = GetGradientColor(hpPercent);
                         string bar = BuildBarDirect(targetHP, targetMaxHP, color);
@@ -192,7 +185,6 @@ namespace SideBarHealth
 
                 msg += Config.Outset;
 
-                // EXACT SAME SendData FORMAT AS ORIGINAL CODE
                 viewer.SendData(PacketTypes.Status, msg, 0, Config.TextFlag, 0, 0, 0);
             }
         }
@@ -273,7 +265,7 @@ namespace SideBarHealth
 
         private void OnReload(ReloadEventArgs e)
         {
-            Config = File.Exists(path) ? Config.Read() : new Config();
+            Config = File.Exists(path) ? Configuration.Read() : new Configuration();
             e.Player?.SendSuccessMessage("[SideBarHealth] Config reloaded.");
         }
     }

@@ -22,11 +22,11 @@ namespace SideBarHealth
             File.WriteAllText(SideBar.path, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
 
-        public static Config Read()
+        public static Configuration Read()
         {
             if (!File.Exists(SideBar.path))
-                return new Config();
-            return JsonConvert.DeserializeObject<Config>(File.ReadAllText(SideBar.path)) ?? new Config();
+                return new Configuration();
+            return JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(SideBar.path)) ?? new Configuration();
         }
     }
 }
