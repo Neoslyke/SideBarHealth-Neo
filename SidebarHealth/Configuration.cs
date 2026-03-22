@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace SideBarHealth
 {
-    public class Config
+    public class Configuration
     {
         public float MaxDistance = 100f;
         public string[] gradient = { "00FFFF", "00FF00", "00FF00", "FFFF00", "FF0000" };
